@@ -1,67 +1,73 @@
 ﻿using System.Diagnostics;
 using System.Runtime.Remoting;
+using Mythrill.Shared;
 
-namespace Mythrill;
-
-public class Game
+namespace Mythrill
 {
-    // Define a player
-
-    public void Start()
+    public class Game
     {
-        Debug.WriteLine("Starting Game");
-        InitializeGame();
-        LoadModules();
-        MainGameLoop();
-    }
-
-    private void InitializeGame()
-    {
-        Console.WriteLine("Welcome to Mythrill Reborn");
-    }
-
-    private void LoadModules()
-    {
-        Debug.WriteLine("Loading Modules");
+        // Define a player
+        private Player? _player;
         
-        // Initialize different modules
-        
-        Debug.WriteLine("Loaded Modules");
-    }
-
-    private void LoadModule(string assemblyName, string typeName)
-    {
-        ObjectHandle? moduleInstance = Activator.CreateInstance(assemblyName, typeName);
-        if (moduleInstance != null)
+        public void Start()
         {
-            // Module unwrapping and loading
+            Debug.WriteLine("Starting Game");
+            InitializeGame();
+            LoadModules();
+            MainGameLoop();
         }
-    }
-
-    private void MainGameLoop()
-    {
-        // set up a very basic game loop
-        var isPlaying = true;
-
-        Debug.WriteLine("Starting Game Loop");
-        
-        while (isPlaying)
+    
+        private void InitializeGame()
         {
-            Console.Write("\n> ");
-            string? command = Console.ReadLine()?.ToLower();
-
-            switch (command)
+            _player = new Player("Hero");   
+            Console.WriteLine("Welcome to Mythrill Reborn");
+        }
+    
+        private void LoadModules()
+        {
+            Debug.WriteLine("Loading Modules");
+            
+            // Initialize different modules
+            LoadModule("Mythrill.Inventory", "Mythrill.Inventory.InventoryModule");
+            
+            Debug.WriteLine("Loaded Modules");
+        }
+    
+        private void LoadModule(string assemblyName, string typeName)
+        {
+            ObjectHandle? moduleInstance = Activator.CreateInstance(assemblyName, typeName);
+            if (moduleInstance == null) return;
+            
+            // Module unwrapping and loading
+            var module = moduleInstance.Unwrap() as IGameModule;
+            module?.LoadModule();
+        }
+    
+        private void MainGameLoop()
+        {
+            // set up a very basic game loop
+            var isPlaying = true;
+    
+            Debug.WriteLine("Starting Game Loop");
+            
+            while (isPlaying)
             {
-                case "quit":
-                    isPlaying = false;
-                    Debug.WriteLine("Quitting Game");
-                    Console.WriteLine("Goodbye");
-                    break;
-                
-                // Add several more commands
-                default:
-                    Console.WriteLine("Unknown command.");
-                    break;
+                Console.Write("\n> ");
+                string? command = Console.ReadLine()?.ToLower();
+    
+                switch (command)
+                {
+                    case "quit":
+                        isPlaying = false;
+                        Debug.WriteLine("Quitting Game");
+                        Console.WriteLine("Goodbye");
+                        break;
+                    
+                    // Add several more commands
+                    default:
+                        Console.WriteLine("Unknown command.");
+                        break;
+                }
             }
         }
     }
